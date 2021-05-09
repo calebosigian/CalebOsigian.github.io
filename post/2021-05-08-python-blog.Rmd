@@ -1,0 +1,10 @@
+---
+title: Python Blog
+author: ''
+date: '2021-05-08'
+slug: python-blog
+categories: []
+tags: []
+description: 'a blog about python'
+---
+he went to the store
