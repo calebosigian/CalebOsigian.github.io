@@ -1,10 +1,22 @@
 ---
-title: Python Blog
+title: 'Python and R: When Worlds Collide'
 author: ''
 date: '2021-05-08'
 slug: python-blog
 categories: []
 tags: []
-description: 'a blog about python'
+description: ''
 ---
-he went to the store
+Python and R communicate to eachother through the reticulate function
+
+```{r}
+2+2
+```
+
+```{python}
+
+```
+
+
+![](/post/2021-05-08-python-blog_files/IMG_0196.jpg)
+

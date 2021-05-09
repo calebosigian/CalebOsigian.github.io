@@ -26,12 +26,13 @@
     </item>
     
     <item>
-      <title>Python Blog</title>
+      <title>Python and R: When Worlds Collide</title>
       <link>/post/2021/05/08/python-blog/</link>
       <pubDate>Sat, 08 May 2021 00:00:00 +0000</pubDate>
       
       <guid>/post/2021/05/08/python-blog/</guid>
-      <description>he went to the store</description>
+      <description> Python and R communicate to eachother through the reticulate function
+2+2 ## [1] 4 </description>
     </item>
     
     <item>
