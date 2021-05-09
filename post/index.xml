@@ -13,8 +13,8 @@
       <pubDate>Sat, 08 May 2021 00:00:00 +0000</pubDate>
       
       <guid>/post/2021/05/08/python-blog/</guid>
-      <description> Python and R communicate to eachother through the reticulate function
-2+2 ## [1] 4 </description>
+      <description> Python and R are two types of incredibly useful programming languages. Both can be used as calculators and can communicate with one another using the reticulate function. My experience in my Biostatistics class has predisposed me to prefering R to python, however, I can clearly see the merit of both languages. I have attached below an R and python chunk to demonstrate the calculation abilities of each.
+2+2 ## [1] 4 2+2 ## 4 </description>
     </item>
     
   </channel>
