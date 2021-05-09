@@ -5,11 +5,12 @@
     <link>/project/</link>
     <description>Recent content in Projects on Caleb Osigian</description>
     <generator>Hugo -- gohugo.io</generator>
-    <language>en-US</language><atom:link href="/project/index.xml" rel="self" type="application/rss+xml" />
+    <language>en-US</language>
+    <lastBuildDate>Sat, 08 May 2021 00:00:00 +0000</lastBuildDate><atom:link href="/project/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Project 1</title>
       <link>/project/project1/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <pubDate>Sat, 08 May 2021 00:00:00 +0000</pubDate>
       
       <guid>/project/project1/</guid>
       <description>R Markdown # Reading in Data Shoot &amp;lt;- read.csv(&amp;quot;2008-17_OIS_Subjects.csv&amp;quot;) Rep &amp;lt;- read.csv(&amp;quot;Officer_Involved_Shootings_2008-17_Incidents.csv&amp;quot;) Shootings &amp;lt;- as.data.frame(Shoot) Reports &amp;lt;- as.data.frame(Rep) The two datasets I decided to use for this project were found using Data.gov, I discovered them by searching the keywords “police shootings” as I supposed it would make for interesting data. I found a dataset containing information about officers involved in shootings in Austin, Texas between 2008 and 2017, and found a separate dataset containing subjects involved in shootings in Austin during an identical time frame.</description>
@@ -18,7 +19,7 @@
     <item>
       <title>Project 2</title>
       <link>/project/project2/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <pubDate>Sat, 08 May 2021 00:00:00 +0000</pubDate>
       
       <guid>/project/project2/</guid>
       <description>R Markdown library(dplyr) library(tidyr) # Reading in Data Hawks &amp;lt;- read.csv(&amp;quot;Hawks.csv&amp;quot;) Hawks &amp;lt;- as.data.frame(Hawks) `?`(Stat2Data::Hawks) Hawks &amp;lt;- Hawks %&amp;gt;% select(Month, Day, Year, BandNumber, Species, Age, Sex, Wing, Weight, Culmen, Hallux, Tail, StandardTail, Crop) %&amp;gt;% na.omit() The dataset I decided to use is called “Hawks.csv” and I found it in the “Stat2Data” package. The dataset includes 14 important variables, “Month”, “Day” and “Year”, which all inform when the hawk was observed and measurements taken, as well as “Bandnumber” which is an individual hawk identifier.</description>
