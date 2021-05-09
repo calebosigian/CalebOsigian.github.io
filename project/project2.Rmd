@@ -1,0 +1,240 @@
+---
+title: "Project 2"
+author: "Caleb Osigian"
+Date: "05/07/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE, fig.align = "center", warning = F, message = F,
+tidy=TRUE, tidy.opts=list(width.cutoff=60), R.options=list(max.print=100))
+```
+
+## R Markdown
+
+```{r}
+library(dplyr)
+library(tidyr)
+#Reading in Data
+Hawks <- read.csv("Hawks.csv")
+Hawks <- as.data.frame(Hawks)
+?Stat2Data::Hawks
+Hawks <- Hawks %>% select(Month, Day, Year, BandNumber, Species, Age, Sex, Wing, Weight, Culmen, Hallux, Tail, StandardTail, Crop) %>% na.omit() 
+```
+
+
+  The dataset I decided to use is called "Hawks.csv" and I found it in the "Stat2Data" package. The dataset includes 14 important variables, "Month", "Day" and "Year", which all inform when the hawk was observed and measurements taken, as well as "Bandnumber" which is an individual hawk identifier. The dataset includes the variables "species", in which hawks are classified as one of three species, "age", which classifies hawks as adult or adolescent, and "sex", which classifies hawks as male or female. Also in the dataset is "Wing" which is wing length in millimeters, "weight" which is body weight in grams, "culmen" which is the length (mm) of the upper bill from the tip of the bill to the flesh of the bird, "Hallux" which is the length (mm) of the killing talon, "StandardTail" which is the measurement of tail length in milligrams, "Tail" which is a different way of measuring the tail (also in mm), and finally "Tarsus" which is the length of the foot bone in millimeters. I chose this dataset because I think that hawks are really cool, and I also was very intersted in seeing how different species of hawk were from eachother, and how well species could be predicted by the other variables.     
+
+```{r}
+#Test for Multivariate Normality
+library(rstatix)
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+group <- Hawks$Species
+DVs <- Hawks %>% select(Wing,Weight,Culmen,Hallux,Tail,StandardTail) 
+DVs <- as.data.frame(DVs)
+sapply(split(DVs,group), mshapiro_test)
+#Test of homogeneity of covarience
+lapply(split(DVs, group), cov)
+#MANOVA
+man1 <- manova(cbind(Wing,Weight,Culmen,Hallux,Tail,StandardTail)~Species, data=Hawks)
+summary(man1)
+#all univariate ANOVAs
+summary.aov(man1)
+#Mean differences by species
+Hawks%>%group_by(Species)%>%summarise(mean(Wing),mean(Weight),mean(Culmen),mean(Hallux),mean(Tail),mean(StandardTail))
+#T-tests
+pairwise.t.test(Hawks$Wing,Hawks$Species, p.adj="none")
+pairwise.t.test(Hawks$Weight,Hawks$Species, p.adj="none")
+pairwise.t.test(Hawks$Culmen,Hawks$Species, p.adj="none")
+pairwise.t.test(Hawks$Hallux,Hawks$Species, p.adj="none")
+pairwise.t.test(Hawks$Tail,Hawks$Species, p.adj="none")
+pairwise.t.test(Hawks$StandardTail,Hawks$Species, p.adj="none")
+#Visualization
+Hawks%>%select(Species, Wing, Weight, Culmen, Hallux, Tail, StandardTail)%>%pivot_longer(-1,names_to='names', values_to='measure')%>%
+  ggplot(aes(Species,measure,fill=Species))+geom_bar(stat="summary")+geom_errorbar(stat="summary", width=.5)+
+  facet_wrap(~names, nrow=2)+coord_flip()+ylab("")+theme(legend.position = "none")
+#bonferroni correction
+1-(0.95^25)
+0.05/25
+```
+  The results of the MANOVA test showed that at least one of the numeric variables showed a mean difference across levels of the species variable. After performing univeriate anovas, we can easily reject the null hypothesis that means don't differ between species for all of the variables: Wing, Weight, Culmen, Hallux, Tail, and StandardTail. Posthoc t-tests showed that every numeric variable, differed significantly no matter what combination of species types were compared, meaning that every species type had a significantly different mean than every other species type, for all of the aforementioned numeric variables. I conducted 1 manova and 6 univariate anova's, as well as 18 t-tests when I was conducting post-hoc testing. The probability of having a type I error is 72.3%, so I adjusted my p-values to 0.002 (0.05/25) instead of 0.05. Using a p-value of (bonferroni = 0.002) did not change any of my previous conclusions. The assumption of multivariate normality was violated, and the assumption of homogeniety of varience was also violated.  
+
+
+```{r}
+#Randomization
+
+prdat <- Hawks %>% select(Species, Sex, Wing) %>% filter(Sex == "M" | Sex == "F") %>% filter(Species == "SS") %>% arrange(Sex)
+
+#actual mean difference
+prdat %>% group_by(Sex) %>% summarize(means = mean(Wing)) %>% summarize(`mean_diff`=diff(means))
+
+#Random distribution
+rand_dist<-vector() 
+for(i in 1:100000){
+  new<-data.frame(Wing=sample(prdat$Wing),Sex=prdat$Sex) 
+  rand_dist[i]<-mean(new[new$Sex=="F",]$Wing)-              mean(new[new$Sex=="M",]$Wing)}
+
+#visualization
+{hist(rand_dist,main="",ylab=""); abline(v = c(-25.947, 25.947),col="red")}
+
+#p-value
+mean(rand_dist>25.947 | rand_dist < -25.947)
+
+#ttest for comparison
+t.test(data=prdat, Wing~Sex)
+```
+
+I performed a randomization test to determine if a mean difference exists in wing weight between males and females in the species "SS". Female birds had a mean difference of -25.94 compared to males of the same species. The null hypothesis is that there is no true mean difference in the population, the alternative hypothesis is that there is a true mean difference (-25.947). I generated my own sampling distribution using 100000 samples of mixed up data and never once was a mean of |25.947| generated (note that the actual mean difference is so large that even after 100000 permutations of random samples the abline doesn't show up on the graph). The probability of this mean difference occurring due to chance (p-value) is calculated to be zero. We can very definitively reject the null hypothesis. I also ran an actual T-test which agreed with the result of my randomization test.
+
+```{r}
+library(lmtest)
+library(sandwich)
+#Linear Regression Model with mean centured numeric variables
+lmdat <- Hawks %>% mutate(Hallux_c=Hallux - mean(Hallux,na.rm=T)) %>% select(Weight, Hallux_c, Species, Hallux) %>% na.omit()
+fit <- lm(Weight~Hallux_c*Species, data = lmdat)
+summary(fit)
+#Visualization
+lmdat %>% ggplot(aes(Hallux, Weight, color=Species)) + geom_point()+geom_smooth(method="lm") + geom_vline(xintercept=mean(lmdat$Hallux,na.rm=T),lty=2)
+#homoskedasticity
+bptest(fit) #reject the null and use error bars for heterskedasticity
+#linearity
+ggplot(lmdat) + geom_point(aes(Hallux, Weight, color=Species)) #looks good
+#normality
+shapiro.test(lmdat$Hallux) #reject null
+shapiro.test(lmdat$Weight) #reject null
+#Including Robust Standard Errors
+coeftest(fit,vcov=vcovHC(fit))
+#Variance
+summary(fit)$r.sq
+
+```
+
+  I created a linear regression model predicting weight from the hallux size and species type as well as their interaction. The data failed the assumption of normality and homoskedasticity, it did appear to meet the assumption of linearity. For species "CH", every one unit increase in Hallux the predicted weight increases by 12.399 (significant). For species "RT", every one unit increase in Hallux the predicted weight increases by 16.096 (significant). For species "SS", every one unit increase in Hallux the predicted weight decreases by 12.327 (significant). For the intercept, the mean predicted weight for species "CH" with average hallux size is 446.146 (significant). The mean predicted weight for species "RT" with average hallux size is 453.690 greater than for "CH" (significant). The mean predicted weight for species "SS" with average hallux size is 294.786 less than for "CH" (significant). After recomputing regression results with robust standard errors, some of the coefficients changed in regards to their significance. The interaction coefficients between species and centered hallux size were no longer significant, what remained significant was predicted weights of each species when the hallux size is average, the coefficients (#) of these variables themselves did not change. The model explains 89.36% of the variation in the outcome (R^2).  
+
+```{r}
+#LM with bootstrap SEM
+boot_dat<- sample_frac(lmdat, replace=T)
+samp_distn<-replicate(5000, {boot_dat <- sample_frac(lmdat, replace=T)
+fit <- lm(Weight~Hallux_c*Species, data = boot_dat) 
+coef(fit)}) 
+samp_distn %>% t %>% as.data.frame %>% summarize_all(sd)
+
+samp_distn %>% t %>% as.data.frame %>% pivot_longer(1:3) %>% group_by(name) %>% summarize(lower=quantile(value,.025), upper=quantile(value,.975))
+```
+
+  The standard deviations generated by regressing with bootstrap SEM were lower for every interaction/coefficient than those generated by robust SE's in the prior chunk. The standard deviations from the bootstrap SEM were higher, however, for every interaction/coefficient than those generated by just a linear regression. Using robust SE's appears to be the most conservative and therefor likely the best model to use in this case.
+
+```{r}
+#Logistic Regression Model
+
+data<-Hawks %>% select(Species, Sex, Weight, Wing) %>% filter(Sex == "M" | Sex == "F") %>% filter(Species == "SS") %>% arrange(Sex) %>% mutate(y=ifelse(Sex=="F",1,0))
+fit<-glm(y~Wing+Weight,data=data,family="binomial")
+summary(fit)
+coef(fit) %>% exp() %>% round(5) %>% data.frame
+prob<-predict(fit,type="response")
+table(predict=as.numeric(prob>.5),truth=data$y)%>%addmargins
+(88+89)/189
+88/93
+89/96
+88/95
+library(plotROC)
+ROCplot<-ggplot(data)+geom_roc(aes(d=y, m=Weight), n.cuts=0)
+ROCplot
+calc_auc(ROCplot)
+
+ggplot(data)+geom_line(aes(x=Weight, y=y))
+```
+
+I created a logistical linear regression predicting sex from weight and wing length. Wing length predicts sex significantly, for every one unit increase in wing length the odds of being female changes by a factor of 0.289611. Weight also predicts sex significantly, for every one unit increase in weight the odds of being female changes by a factor of -0.058122. The AUC calculated is 0.9176, which falls within the range of "great". Using the numbers from the confusion matrix, the accuracy is .9365, the specificity is 0.9462, the sensitivity is 0.9271, and the precision is 0.9263.
+
+```{r}
+#LEAVE THIS CHUNK ALONE!
+library(knitr)
+opts_chunk$set(fig.align="center", fig.height=5, message=FALSE, warning=FALSE, fig.width=8, tidy.opts=list(width.cutoff=60),tidy=TRUE)
+
+class_diag<-function(probs,truth){
+  
+  tab<-table(factor(probs>.5,levels=c("FALSE","TRUE")),truth)
+  acc=sum(diag(tab))/sum(tab)
+  sens=tab[2,2]/colSums(tab)[2]
+  spec=tab[1,1]/colSums(tab)[1]
+  ppv=tab[2,2]/rowSums(tab)[2]
+
+  if(is.numeric(truth)==FALSE & is.logical(truth)==FALSE) truth<-as.numeric(truth)-1
+  
+  #CALCULATE EXACT AUC
+  ord<-order(probs, decreasing=TRUE)
+  probs <- probs[ord]; truth <- truth[ord]
+  
+  TPR=cumsum(truth)/max(1,sum(truth)) 
+  FPR=cumsum(!truth)/max(1,sum(!truth))
+  
+  dup<-c(probs[-1]>=probs[-length(probs)], FALSE)
+  TPR<-c(0,TPR[!dup],1); FPR<-c(0,FPR[!dup],1)
+  
+  n <- length(TPR)
+  auc<- sum( ((TPR[-1]+TPR[-n])/2) * (FPR[-1]-FPR[-n]) )
+
+  data.frame(acc,sens,spec,ppv,auc)
+}
+```
+
+```{r}
+#Logistic Regression all Variables
+Hawk<-Hawks %>% select(-Year,-Month,-Day, -BandNumber) %>% filter(Sex == "M" | Sex == "F") %>% mutate(y=ifelse(Sex=="F",1,0)) %>% select(-Sex)
+fit<-glm(y~(.),data=Hawk,family=binomial)
+prob<-predict(fit,type="response")
+class_diag(prob,Hawk$y)
+table(predict=as.numeric(prob>.5),truth=Hawk$y)%>%addmargins
+
+#CV
+k=10
+
+data<-Hawk[sample(nrow(Hawk)),]
+folds<-cut(seq(1:nrow(Hawk)),breaks=k,labels=F)
+diags<-NULL
+for(i in 1:k){
+  train<-data[folds!=i,]
+  test<-data[folds==i,]
+  truth<-test$y
+  fit<-glm(y~.,data=train,family="binomial")
+  probs<-predict(fit,newdata=test,type="response")
+  diags<-rbind(diags,class_diag(probs,truth))
+}
+summarize_all(diags,mean)
+
+#lasso
+library(glmnet)
+y<-as.matrix(Hawk$y)
+x<-model.matrix(y~.,data=Hawk)[,-1] 
+cv<-cv.glmnet(x,y,family="binomial")
+lasso<-glmnet(x,y,family="binomial",lambda=cv$lambda.1se) 
+coef(lasso)
+class_diag(prob,Hawk$y)
+table(predict=as.numeric(prob>.5),truth=Hawk$y)%>%addmargins
+
+#CV with important variables
+k=10
+
+Hawk <- Hawk %>% mutate(Species=if_else(Species=="SS",1,0),
+                Age=if_else(Age=="I",1,0))
+data<-Hawk[sample(nrow(Hawk)),]
+folds<-cut(seq(1:nrow(Hawk)),breaks=k,labels=F)
+diags<-NULL
+for(i in 1:k){
+  train<-data[folds!=i,]
+  test<-data[folds==i,]
+  truth<-test$y
+  fit<-glm(y~Age+StandardTail+Tail+Species,data=train,family="binomial")
+  probs<-predict(fit,newdata=test,type="response")
+  diags<-rbind(diags,class_diag(probs,truth))
+}
+summarize_all(diags,mean)
+```
+
+
+I performed a logistic regression predicting sex from every variable and the AUC calculated is 0.9552, which falls within the range of "great". The sensitivity is 0.9339, the specificity is 0.875, the precision is 0.8828, and the accuracy is 0.9045. After performing 10-fold CV, The accuracy decreased to 0.8962, the sensitivity to 0.8961, the specificity increased to 0.8793, the precision decreased to 0.8632, and the AUC decreased to 0.9211, which means in the prior model there was likely overfitting. After performing lasso the variables retained were species "SS", age "I", Tail and StandardTail. I performed a 10-fold CV using only the four variables that lasso deemed important and achieved an AUC of 0.9524, which is just below the glm I performed with every variable, and is greater than the AUC generated by my first 10-fold CV.
+  
+  

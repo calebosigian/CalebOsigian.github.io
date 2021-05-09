@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Caleb Osigian" />
+    
+    <link rel="shortcut icon" type="image/x-icon" href="../../img/favicon.ico">
+    <title>Project 2</title>
+    <meta name="generator" content="Hugo 0.83.1" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="../../css/main.css" />
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,400,200bold,400old" />
+    
+    <!--[if lt IE 9]>
+			<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+			<script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+		<![endif]-->
+
+    
+  </head>
+
+  <body>
+    <div id="wrap">
+      
+      <nav class="navbar navbar-default">
+  <div class="container">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="../../"><i class="fa fa-home"></i></a>
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <div class="navbar-collapse collapse" id="navbar">
+      <ul class="nav navbar-nav navbar-right">
+      
+        
+        <li><a href="../../post/">BLOG</a></li>
+        
+        <li><a href="../../projects/">PROJECTS</a></li>
+        
+        <li><a href="../../resume/">RESUME1</a></li>
+        
+      
+      </ul>
+    </div>
+  </div>
+</nav>
+
+      <div class="container">
+        <div class="blog-post">
+          <h3>
+            <strong><a href="../../project/project2/">Project 2</a></strong>
+          </h3>
+        </div>
+ 
+<div class="blog-title">
+          <h4>
+         January 1, 0001 
+            &nbsp;&nbsp;
+            
+          </h4>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-body">
+            <div class="blogpost">
+              
+
+
+<div id="r-markdown" class="section level2">
+<h2>R Markdown</h2>
+<pre class="r"><code>library(dplyr)
+library(tidyr)
+# Reading in Data
+Hawks &lt;- read.csv(&quot;Hawks.csv&quot;)
+Hawks &lt;- as.data.frame(Hawks)
+`?`(Stat2Data::Hawks)
+Hawks &lt;- Hawks %&gt;% select(Month, Day, Year, BandNumber, Species, 
+    Age, Sex, Wing, Weight, Culmen, Hallux, Tail, StandardTail, 
+    Crop) %&gt;% na.omit()</code></pre>
+<p>The dataset I decided to use is called “Hawks.csv” and I found it in the “Stat2Data” package. The dataset includes 14 important variables, “Month”, “Day” and “Year”, which all inform when the hawk was observed and measurements taken, as well as “Bandnumber” which is an individual hawk identifier. The dataset includes the variables “species”, in which hawks are classified as one of three species, “age”, which classifies hawks as adult or adolescent, and “sex”, which classifies hawks as male or female. Also in the dataset is “Wing” which is wing length in millimeters, “weight” which is body weight in grams, “culmen” which is the length (mm) of the upper bill from the tip of the bill to the flesh of the bird, “Hallux” which is the length (mm) of the killing talon, “StandardTail” which is the measurement of tail length in milligrams, “Tail” which is a different way of measuring the tail (also in mm), and finally “Tarsus” which is the length of the foot bone in millimeters. I chose this dataset because I think that hawks are really cool, and I also was very intersted in seeing how different species of hawk were from eachother, and how well species could be predicted by the other variables.</p>
+<pre class="r"><code># Test for Multivariate Normality
+library(rstatix)
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+group &lt;- Hawks$Species
+DVs &lt;- Hawks %&gt;% select(Wing, Weight, Culmen, Hallux, Tail, StandardTail)
+DVs &lt;- as.data.frame(DVs)
+sapply(split(DVs, group), mshapiro_test)</code></pre>
+<pre><code>##           CH           RT           SS          
+## statistic 0.587367     0.6915775    0.3385071   
+## p.value   1.659558e-10 9.189805e-24 8.529421e-26</code></pre>
+<pre class="r"><code># Test of homogeneity of covarience
+lapply(split(DVs, group), cov)</code></pre>
+<pre><code>## $CH
+##                    Wing     Weight     Culmen     Hallux       Tail
+## Wing         1358.66497  3862.2185  66.090434  47.762011  371.58844
+## Weight       3862.21854 34163.0221 333.026148 465.157100 2024.61522
+## Culmen         66.09043   333.0261   6.935825   3.801807   30.94745
+## Hallux         47.76201   465.1571   3.801807  37.516122   26.53480
+## Tail          371.58844  2024.6152  30.947449  26.534800  302.35969
+## StandardTail  191.75255  1081.8389  14.061224  32.683546  167.67985
+##              StandardTail
+## Wing            191.75255
+## Weight         1081.83886
+## Culmen           14.06122
+## Hallux           32.68355
+## Tail            167.67985
+## StandardTail    192.97534
+## 
+## $RT
+##                    Wing     Weight     Culmen     Hallux      Tail StandardTail
+## Wing          633.88470  2012.4621  26.971307  25.901881 137.43710    121.74115
+## Weight       2012.46212 37887.4923 246.485131 214.161993 586.25651    708.39639
+## Culmen         26.97131   246.4851   4.825979   3.599108  12.48447     12.56948
+## Hallux         25.90188   214.1620   3.599108   7.515724  11.66597     16.19075
+## Tail          137.43710   586.2565  12.484470  11.665967 188.02989    108.63984
+## StandardTail  121.74115   708.3964  12.569479  16.190750 108.63984    184.66988
+## 
+## $SS
+##                     Wing      Weight     Culmen     Hallux        Tail
+## Wing          565.447062 1961.400947  44.373378   7.931857  350.137288
+## Weight       1961.400947 8198.416486 167.067057   9.822139 1177.083542
+## Culmen         44.373378  167.067057   4.093462   2.051561   28.299387
+## Hallux          7.931857    9.822139   2.051561 135.938252    7.898204
+## Tail          350.137288 1177.083542  28.299387   7.898204  264.198273
+## StandardTail  197.577109  443.386745  14.841228   7.159552  164.077973
+##              StandardTail
+## Wing           197.577109
+## Weight         443.386745
+## Culmen          14.841228
+## Hallux           7.159552
+## Tail           164.077973
+## StandardTail   407.931050</code></pre>
+<pre class="r"><code># MANOVA
+man1 &lt;- manova(cbind(Wing, Weight, Culmen, Hallux, Tail, StandardTail) ~ 
+    Species, data = Hawks)
+summary(man1)</code></pre>
+<pre><code>##            Df Pillai approx F num Df den Df    Pr(&gt;F)    
+## Species     2 1.3195   178.05     12   1102 &lt; 2.2e-16 ***
+## Residuals 555                                            
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre class="r"><code># all univariate ANOVAs
+summary.aov(man1)</code></pre>
+<pre><code>##  Response Wing :
+##              Df  Sum Sq Mean Sq F value    Pr(&gt;F)    
+## Species       2 4773930 2386965  3545.4 &lt; 2.2e-16 ***
+## Residuals   555  373661     673                      
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+##  Response Weight :
+##              Df    Sum Sq  Mean Sq F value    Pr(&gt;F)    
+## Species       2 107079730 53539865  1950.1 &lt; 2.2e-16 ***
+## Residuals   555  15237548    27455                      
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+##  Response Culmen :
+##              Df  Sum Sq Mean Sq F value    Pr(&gt;F)    
+## Species       2 29138.1 14569.1  3061.4 &lt; 2.2e-16 ***
+## Residuals   555  2641.2     4.8                      
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+##  Response Hallux :
+##              Df Sum Sq Mean Sq F value    Pr(&gt;F)    
+## Species       2  32793 16396.3  304.52 &lt; 2.2e-16 ***
+## Residuals   555  29883    53.8                      
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+##  Response Tail :
+##              Df Sum Sq Mean Sq F value    Pr(&gt;F)    
+## Species       2 656838  328419  1467.1 &lt; 2.2e-16 ***
+## Residuals   555 124240     224                      
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+##  Response StandardTail :
+##              Df Sum Sq Mean Sq F value    Pr(&gt;F)    
+## Species       2 676680  338340  1294.3 &lt; 2.2e-16 ***
+## Residuals   555 145087     261                      
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre class="r"><code># Mean differences by species
+Hawks %&gt;% group_by(Species) %&gt;% summarise(mean(Wing), mean(Weight), 
+    mean(Culmen), mean(Hallux), mean(Tail), mean(StandardTail))</code></pre>
+<pre><code>## # A tibble: 3 x 7
+##   Species `mean(Wing)` `mean(Weight)` `mean(Culmen)` `mean(Hallux)` `mean(Tail)`
+##   &lt;fct&gt;          &lt;dbl&gt;          &lt;dbl&gt;          &lt;dbl&gt;          &lt;dbl&gt;        &lt;dbl&gt;
+## 1 CH              243.           427.           17.7           23.1         199.
+## 2 RT              379.          1080.           27.0           31.0         220.
+## 3 SS              183.           151.           11.5           14.4         146.
+## # … with 1 more variable: `mean(StandardTail)` &lt;dbl&gt;</code></pre>
+<pre class="r"><code># T-tests
+pairwise.t.test(Hawks$Wing, Hawks$Species, p.adj = &quot;none&quot;)</code></pre>
+<pre><code>## 
+##  Pairwise comparisons using t tests with pooled SD 
+## 
+## data:  Hawks$Wing and Hawks$Species 
+## 
+##    CH     RT    
+## RT &lt;2e-16 -     
+## SS &lt;2e-16 &lt;2e-16
+## 
+## P value adjustment method: none</code></pre>
+<pre class="r"><code>pairwise.t.test(Hawks$Weight, Hawks$Species, p.adj = &quot;none&quot;)</code></pre>
+<pre><code>## 
+##  Pairwise comparisons using t tests with pooled SD 
+## 
+## data:  Hawks$Weight and Hawks$Species 
+## 
+##    CH     RT    
+## RT &lt;2e-16 -     
+## SS &lt;2e-16 &lt;2e-16
+## 
+## P value adjustment method: none</code></pre>
+<pre class="r"><code>pairwise.t.test(Hawks$Culmen, Hawks$Species, p.adj = &quot;none&quot;)</code></pre>
+<pre><code>## 
+##  Pairwise comparisons using t tests with pooled SD 
+## 
+## data:  Hawks$Culmen and Hawks$Species 
+## 
+##    CH     RT    
+## RT &lt;2e-16 -     
+## SS &lt;2e-16 &lt;2e-16
+## 
+## P value adjustment method: none</code></pre>
+<pre class="r"><code>pairwise.t.test(Hawks$Hallux, Hawks$Species, p.adj = &quot;none&quot;)</code></pre>
+<pre><code>## 
+##  Pairwise comparisons using t tests with pooled SD 
+## 
+## data:  Hawks$Hallux and Hawks$Species 
+## 
+##    CH      RT     
+## RT 8.7e-12 -      
+## SS 4.8e-13 &lt; 2e-16
+## 
+## P value adjustment method: none</code></pre>
+<pre class="r"><code>pairwise.t.test(Hawks$Tail, Hawks$Species, p.adj = &quot;none&quot;)</code></pre>
+<pre><code>## 
+##  Pairwise comparisons using t tests with pooled SD 
+## 
+## data:  Hawks$Tail and Hawks$Species 
+## 
+##    CH     RT    
+## RT &lt;2e-16 -     
+## SS &lt;2e-16 &lt;2e-16
+## 
+## P value adjustment method: none</code></pre>
+<pre class="r"><code>pairwise.t.test(Hawks$StandardTail, Hawks$Species, p.adj = &quot;none&quot;)</code></pre>
+<pre><code>## 
+##  Pairwise comparisons using t tests with pooled SD 
+## 
+## data:  Hawks$StandardTail and Hawks$Species 
+## 
+##    CH      RT     
+## RT 4.1e-14 -      
+## SS &lt; 2e-16 &lt; 2e-16
+## 
+## P value adjustment method: none</code></pre>
+<pre class="r"><code># Visualization
+Hawks %&gt;% select(Species, Wing, Weight, Culmen, Hallux, Tail, 
+    StandardTail) %&gt;% pivot_longer(-1, names_to = &quot;names&quot;, values_to = &quot;measure&quot;) %&gt;% 
+    ggplot(aes(Species, measure, fill = Species)) + geom_bar(stat = &quot;summary&quot;) + 
+    geom_errorbar(stat = &quot;summary&quot;, width = 0.5) + facet_wrap(~names, 
+    nrow = 2) + coord_flip() + ylab(&quot;&quot;) + theme(legend.position = &quot;none&quot;)</code></pre>
+<p><img src="../../project/project2_files/figure-html/unnamed-chunk-2-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code># bonferroni correction
+1 - (0.95^25)</code></pre>
+<pre><code>## [1] 0.7226104</code></pre>
+<pre class="r"><code>0.05/25</code></pre>
+<pre><code>## [1] 0.002</code></pre>
+<p>The results of the MANOVA test showed that at least one of the numeric variables showed a mean difference across levels of the species variable. After performing univeriate anovas, we can easily reject the null hypothesis that means don’t differ between species for all of the variables: Wing, Weight, Culmen, Hallux, Tail, and StandardTail. Posthoc t-tests showed that every numeric variable, differed significantly no matter what combination of species types were compared, meaning that every species type had a significantly different mean than every other species type, for all of the aforementioned numeric variables. I conducted 1 manova and 6 univariate anova’s, as well as 18 t-tests when I was conducting post-hoc testing. The probability of having a type I error is 72.3%, so I adjusted my p-values to 0.002 (0.05/25) instead of 0.05. Using a p-value of (bonferroni = 0.002) did not change any of my previous conclusions. The assumption of multivariate normality was violated, and the assumption of homogeniety of varience was also violated.</p>
+<pre class="r"><code># Randomization
+
+prdat &lt;- Hawks %&gt;% select(Species, Sex, Wing) %&gt;% filter(Sex == 
+    &quot;M&quot; | Sex == &quot;F&quot;) %&gt;% filter(Species == &quot;SS&quot;) %&gt;% arrange(Sex)
+
+# actual mean difference
+prdat %&gt;% group_by(Sex) %&gt;% summarize(means = mean(Wing)) %&gt;% 
+    summarize(mean_diff = diff(means))</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##   mean_diff
+##       &lt;dbl&gt;
+## 1     -25.9</code></pre>
+<pre class="r"><code># Random distribution
+rand_dist &lt;- vector()
+for (i in 1:1e+05) {
+    new &lt;- data.frame(Wing = sample(prdat$Wing), Sex = prdat$Sex)
+    rand_dist[i] &lt;- mean(new[new$Sex == &quot;F&quot;, ]$Wing) - mean(new[new$Sex == 
+        &quot;M&quot;, ]$Wing)
+}
+
+# visualization
+{
+    hist(rand_dist, main = &quot;&quot;, ylab = &quot;&quot;)
+    abline(v = c(-25.947, 25.947), col = &quot;red&quot;)
+}</code></pre>
+<p><img src="../../project/project2_files/figure-html/unnamed-chunk-3-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code># p-value
+mean(rand_dist &gt; 25.947 | rand_dist &lt; -25.947)</code></pre>
+<pre><code>## [1] 0</code></pre>
+<pre class="r"><code># ttest for comparison
+t.test(data = prdat, Wing ~ Sex)</code></pre>
+<pre><code>## 
+##  Welch Two Sample t-test
+## 
+## data:  Wing by Sex
+## t = 9.0271, df = 122.35, p-value = 3.09e-15
+## alternative hypothesis: true difference in means is not equal to 0
+## 95 percent confidence interval:
+##  20.25729 31.63720
+## sample estimates:
+## mean in group F mean in group M 
+##        195.9785        170.0312</code></pre>
+<p>I performed a randomization test to determine if a mean difference exists in wing weight between males and females in the species “SS”. Female birds had a mean difference of -25.94 compared to males of the same species. The null hypothesis is that there is no true mean difference in the population, the alternative hypothesis is that there is a true mean difference (-25.947). I generated my own sampling distribution using 100000 samples of mixed up data and never once was a mean of |25.947| generated (note that the actual mean difference is so large that even after 100000 permutations of random samples the abline doesn’t show up on the graph). The probability of this mean difference occurring due to chance (p-value) is calculated to be zero. We can very definitively reject the null hypothesis. I also ran an actual T-test which agreed with the result of my randomization test.</p>
+<pre class="r"><code>library(lmtest)
+library(sandwich)
+# Linear Regression Model with mean centured numeric
+# variables
+lmdat &lt;- Hawks %&gt;% mutate(Hallux_c = Hallux - mean(Hallux, na.rm = T)) %&gt;% 
+    select(Weight, Hallux_c, Species, Hallux) %&gt;% na.omit()
+fit &lt;- lm(Weight ~ Hallux_c * Species, data = lmdat)
+summary(fit)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = Weight ~ Hallux_c * Species, data = lmdat)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -837.58  -58.19  -12.24   40.07  971.67 
+## 
+## Coefficients:
+##                    Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)         446.146     22.623  19.721  &lt; 2e-16 ***
+## Hallux_c             12.399      3.619   3.426 0.000658 ***
+## SpeciesRT           453.690     31.323  14.484  &lt; 2e-16 ***
+## SpeciesSS          -294.786     27.057 -10.895  &lt; 2e-16 ***
+## Hallux_c:SpeciesRT   16.096      4.792   3.359 0.000837 ***
+## Hallux_c:SpeciesSS  -12.327      3.744  -3.293 0.001056 ** 
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 153.6 on 552 degrees of freedom
+## Multiple R-squared:  0.8936, Adjusted R-squared:  0.8926 
+## F-statistic: 926.8 on 5 and 552 DF,  p-value: &lt; 2.2e-16</code></pre>
+<pre class="r"><code># Visualization
+lmdat %&gt;% ggplot(aes(Hallux, Weight, color = Species)) + geom_point() + 
+    geom_smooth(method = &quot;lm&quot;) + geom_vline(xintercept = mean(lmdat$Hallux, 
+    na.rm = T), lty = 2)</code></pre>
+<p><img src="../../project/project2_files/figure-html/unnamed-chunk-4-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code># homoskedasticity
+bptest(fit)  #reject the null and use error bars for heterskedasticity</code></pre>
+<pre><code>## 
+##  studentized Breusch-Pagan test
+## 
+## data:  fit
+## BP = 12.729, df = 5, p-value = 0.02606</code></pre>
+<pre class="r"><code># linearity
+ggplot(lmdat) + geom_point(aes(Hallux, Weight, color = Species))  #looks good</code></pre>
+<p><img src="../../project/project2_files/figure-html/unnamed-chunk-4-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code># normality
+shapiro.test(lmdat$Hallux)  #reject null</code></pre>
+<pre><code>## 
+##  Shapiro-Wilk normality test
+## 
+## data:  lmdat$Hallux
+## W = 0.72862, p-value &lt; 2.2e-16</code></pre>
+<pre class="r"><code>shapiro.test(lmdat$Weight)  #reject null</code></pre>
+<pre><code>## 
+##  Shapiro-Wilk normality test
+## 
+## data:  lmdat$Weight
+## W = 0.85826, p-value &lt; 2.2e-16</code></pre>
+<pre class="r"><code># Including Robust Standard Errors
+coeftest(fit, vcov = vcovHC(fit))</code></pre>
+<pre><code>## 
+## t test of coefficients:
+## 
+##                    Estimate Std. Error t value  Pr(&gt;|t|)    
+## (Intercept)         446.146     38.324 11.6415 &lt; 2.2e-16 ***
+## Hallux_c             12.399     11.037  1.1234    0.2618    
+## SpeciesRT           453.690     65.416  6.9355 1.137e-11 ***
+## SpeciesSS          -294.786     39.626 -7.4393 3.899e-13 ***
+## Hallux_c:SpeciesRT   16.096     13.585  1.1848    0.2366    
+## Hallux_c:SpeciesSS  -12.327     11.061 -1.1144    0.2656    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre class="r"><code># Variance
+summary(fit)$r.sq</code></pre>
+<pre><code>## [1] 0.8935559</code></pre>
+<p>I created a linear regression model predicting weight from the hallux size and species type as well as their interaction. The data failed the assumption of normality and homoskedasticity, it did appear to meet the assumption of linearity. For species “CH”, every one unit increase in Hallux the predicted weight increases by 12.399 (significant). For species “RT”, every one unit increase in Hallux the predicted weight increases by 16.096 (significant). For species “SS”, every one unit increase in Hallux the predicted weight decreases by 12.327 (significant). For the intercept, the mean predicted weight for species “CH” with average hallux size is 446.146 (significant). The mean predicted weight for species “RT” with average hallux size is 453.690 greater than for “CH” (significant). The mean predicted weight for species “SS” with average hallux size is 294.786 less than for “CH” (significant). After recomputing regression results with robust standard errors, some of the coefficients changed in regards to their significance. The interaction coefficients between species and centered hallux size were no longer significant, what remained significant was predicted weights of each species when the hallux size is average, the coefficients (#) of these variables themselves did not change. The model explains 89.36% of the variation in the outcome (R^2).</p>
+<pre class="r"><code># LM with bootstrap SEM
+boot_dat &lt;- sample_frac(lmdat, replace = T)
+samp_distn &lt;- replicate(5000, {
+    boot_dat &lt;- sample_frac(lmdat, replace = T)
+    fit &lt;- lm(Weight ~ Hallux_c * Species, data = boot_dat)
+    coef(fit)
+})
+samp_distn %&gt;% t %&gt;% as.data.frame %&gt;% summarize_all(sd)</code></pre>
+<pre><code>##   (Intercept) Hallux_c SpeciesRT SpeciesSS Hallux_c:SpeciesRT
+## 1    30.57743 7.036227   54.4378  77.55649           9.766353
+##   Hallux_c:SpeciesSS
+## 1           9.482304</code></pre>
+<pre class="r"><code>samp_distn %&gt;% t %&gt;% as.data.frame %&gt;% pivot_longer(1:3) %&gt;% 
+    group_by(name) %&gt;% summarize(lower = quantile(value, 0.025), 
+    upper = quantile(value, 0.975))</code></pre>
+<pre><code>## # A tibble: 3 x 3
+##   name         lower upper
+##   &lt;chr&gt;        &lt;dbl&gt; &lt;dbl&gt;
+## 1 (Intercept) 395.   514. 
+## 2 Hallux_c      5.33  28.6
+## 3 SpeciesRT   330.   540.</code></pre>
+<p>The standard deviations generated by regressing with bootstrap SEM were lower for every interaction/coefficient than those generated by robust SE’s in the prior chunk. The standard deviations from the bootstrap SEM were higher, however, for every interaction/coefficient than those generated by just a linear regression. Using robust SE’s appears to be the most conservative and therefor likely the best model to use in this case.</p>
+<pre class="r"><code># Logistic Regression Model
+
+data &lt;- Hawks %&gt;% select(Species, Sex, Weight, Wing) %&gt;% filter(Sex == 
+    &quot;M&quot; | Sex == &quot;F&quot;) %&gt;% filter(Species == &quot;SS&quot;) %&gt;% arrange(Sex) %&gt;% 
+    mutate(y = ifelse(Sex == &quot;F&quot;, 1, 0))
+fit &lt;- glm(y ~ Wing + Weight, data = data, family = &quot;binomial&quot;)
+summary(fit)</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = y ~ Wing + Weight, family = &quot;binomial&quot;, data = data)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -5.1069  -0.4022  -0.1115   0.4091   3.2292  
+## 
+## Coefficients:
+##               Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept) -44.154930   5.962255  -7.406 1.30e-13 ***
+## Wing          0.289611   0.039461   7.339 2.15e-13 ***
+## Weight       -0.058122   0.008513  -6.828 8.64e-12 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 261.96  on 188  degrees of freedom
+## Residual deviance: 117.65  on 186  degrees of freedom
+## AIC: 123.65
+## 
+## Number of Fisher Scoring iterations: 6</code></pre>
+<pre class="r"><code>coef(fit) %&gt;% exp() %&gt;% round(5) %&gt;% data.frame</code></pre>
+<pre><code>##                   .
+## (Intercept) 0.00000
+## Wing        1.33591
+## Weight      0.94354</code></pre>
+<pre class="r"><code>prob &lt;- predict(fit, type = &quot;response&quot;)
+table(predict = as.numeric(prob &gt; 0.5), truth = data$y) %&gt;% addmargins</code></pre>
+<pre><code>##        truth
+## predict   0   1 Sum
+##     0    89   5  94
+##     1     7  88  95
+##     Sum  96  93 189</code></pre>
+<pre class="r"><code>(88 + 89)/189</code></pre>
+<pre><code>## [1] 0.9365079</code></pre>
+<pre class="r"><code>88/93</code></pre>
+<pre><code>## [1] 0.9462366</code></pre>
+<pre class="r"><code>89/96</code></pre>
+<pre><code>## [1] 0.9270833</code></pre>
+<pre class="r"><code>88/95</code></pre>
+<pre><code>## [1] 0.9263158</code></pre>
+<pre class="r"><code>library(plotROC)
+ROCplot &lt;- ggplot(data) + geom_roc(aes(d = y, m = Weight), n.cuts = 0)
+ROCplot</code></pre>
+<p><img src="../../project/project2_files/figure-html/unnamed-chunk-6-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>calc_auc(ROCplot)</code></pre>
+<pre><code>##   PANEL group       AUC
+## 1     1    -1 0.9176187</code></pre>
+<pre class="r"><code>ggplot(data) + geom_line(aes(x = Weight, y = y))</code></pre>
+<p><img src="../../project/project2_files/figure-html/unnamed-chunk-6-2.png" width="672" style="display: block; margin: auto;" /></p>
+<p>I created a logistical linear regression predicting sex from weight and wing length. Wing length predicts sex significantly, for every one unit increase in wing length the odds of being female changes by a factor of 0.289611. Weight also predicts sex significantly, for every one unit increase in weight the odds of being female changes by a factor of -0.058122. The AUC calculated is 0.9176, which falls within the range of “great”. Using the numbers from the confusion matrix, the accuracy is .9365, the specificity is 0.9462, the sensitivity is 0.9271, and the precision is 0.9263.</p>
+<pre class="r"><code># LEAVE THIS CHUNK ALONE!
+library(knitr)
+opts_chunk$set(fig.align = &quot;center&quot;, fig.height = 5, message = FALSE, 
+    warning = FALSE, fig.width = 8, tidy.opts = list(width.cutoff = 60), 
+    tidy = TRUE)
+
+class_diag &lt;- function(probs, truth) {
+    
+    tab &lt;- table(factor(probs &gt; 0.5, levels = c(&quot;FALSE&quot;, &quot;TRUE&quot;)), 
+        truth)
+    acc = sum(diag(tab))/sum(tab)
+    sens = tab[2, 2]/colSums(tab)[2]
+    spec = tab[1, 1]/colSums(tab)[1]
+    ppv = tab[2, 2]/rowSums(tab)[2]
+    
+    if (is.numeric(truth) == FALSE &amp; is.logical(truth) == FALSE) 
+        truth &lt;- as.numeric(truth) - 1
+    
+    # CALCULATE EXACT AUC
+    ord &lt;- order(probs, decreasing = TRUE)
+    probs &lt;- probs[ord]
+    truth &lt;- truth[ord]
+    
+    TPR = cumsum(truth)/max(1, sum(truth))
+    FPR = cumsum(!truth)/max(1, sum(!truth))
+    
+    dup &lt;- c(probs[-1] &gt;= probs[-length(probs)], FALSE)
+    TPR &lt;- c(0, TPR[!dup], 1)
+    FPR &lt;- c(0, FPR[!dup], 1)
+    
+    n &lt;- length(TPR)
+    auc &lt;- sum(((TPR[-1] + TPR[-n])/2) * (FPR[-1] - FPR[-n]))
+    
+    data.frame(acc, sens, spec, ppv, auc)
+}</code></pre>
+<pre class="r"><code># Logistic Regression all Variables
+Hawk &lt;- Hawks %&gt;% select(-Year, -Month, -Day, -BandNumber) %&gt;% 
+    filter(Sex == &quot;M&quot; | Sex == &quot;F&quot;) %&gt;% mutate(y = ifelse(Sex == 
+    &quot;F&quot;, 1, 0)) %&gt;% select(-Sex)
+fit &lt;- glm(y ~ (.), data = Hawk, family = binomial)
+prob &lt;- predict(fit, type = &quot;response&quot;)
+class_diag(prob, Hawk$y)</code></pre>
+<pre><code>##         acc      sens  spec       ppv       auc
+## 1 0.9045643 0.9338843 0.875 0.8828125 0.9552342</code></pre>
+<pre class="r"><code>table(predict = as.numeric(prob &gt; 0.5), truth = Hawk$y) %&gt;% addmargins</code></pre>
+<pre><code>##        truth
+## predict   0   1 Sum
+##     0   105   8 113
+##     1    15 113 128
+##     Sum 120 121 241</code></pre>
+<pre class="r"><code># CV
+k = 10
+
+data &lt;- Hawk[sample(nrow(Hawk)), ]
+folds &lt;- cut(seq(1:nrow(Hawk)), breaks = k, labels = F)
+diags &lt;- NULL
+for (i in 1:k) {
+    train &lt;- data[folds != i, ]
+    test &lt;- data[folds == i, ]
+    truth &lt;- test$y
+    fit &lt;- glm(y ~ ., data = train, family = &quot;binomial&quot;)
+    probs &lt;- predict(fit, newdata = test, type = &quot;response&quot;)
+    diags &lt;- rbind(diags, class_diag(probs, truth))
+}
+summarize_all(diags, mean)</code></pre>
+<pre><code>##         acc      sens      spec       ppv       auc
+## 1 0.8836667 0.9125641 0.8546356 0.8643232 0.9261254</code></pre>
+<pre class="r"><code># lasso
+library(glmnet)
+y &lt;- as.matrix(Hawk$y)
+x &lt;- model.matrix(y ~ ., data = Hawk)[, -1]
+cv &lt;- cv.glmnet(x, y, family = &quot;binomial&quot;)
+lasso &lt;- glmnet(x, y, family = &quot;binomial&quot;, lambda = cv$lambda.1se)
+coef(lasso)</code></pre>
+<pre><code>## 11 x 1 sparse Matrix of class &quot;dgCMatrix&quot;
+##                        s0
+## (Intercept)  -18.97506538
+## SpeciesRT      .         
+## SpeciesSS      4.92031072
+## AgeI          -0.54213347
+## Wing           .         
+## Weight         .         
+## Culmen         .         
+## Hallux         .         
+## Tail           0.04225179
+## StandardTail   0.05421987
+## Crop           .</code></pre>
+<pre class="r"><code>class_diag(prob, Hawk$y)</code></pre>
+<pre><code>##         acc      sens  spec       ppv       auc
+## 1 0.9045643 0.9338843 0.875 0.8828125 0.9552342</code></pre>
+<pre class="r"><code>table(predict = as.numeric(prob &gt; 0.5), truth = Hawk$y) %&gt;% addmargins</code></pre>
+<pre><code>##        truth
+## predict   0   1 Sum
+##     0   105   8 113
+##     1    15 113 128
+##     Sum 120 121 241</code></pre>
+<pre class="r"><code># CV with important variables
+k = 10
+
+Hawk &lt;- Hawk %&gt;% mutate(Species = if_else(Species == &quot;SS&quot;, 1, 
+    0), Age = if_else(Age == &quot;I&quot;, 1, 0))
+data &lt;- Hawk[sample(nrow(Hawk)), ]
+folds &lt;- cut(seq(1:nrow(Hawk)), breaks = k, labels = F)
+diags &lt;- NULL
+for (i in 1:k) {
+    train &lt;- data[folds != i, ]
+    test &lt;- data[folds == i, ]
+    truth &lt;- test$y
+    fit &lt;- glm(y ~ Age + StandardTail + Tail + Species, data = train, 
+        family = &quot;binomial&quot;)
+    probs &lt;- predict(fit, newdata = test, type = &quot;response&quot;)
+    diags &lt;- rbind(diags, class_diag(probs, truth))
+}
+summarize_all(diags, mean)</code></pre>
+<pre><code>##      acc     sens      spec       ppv       auc
+## 1 0.9045 0.920439 0.8801881 0.8913294 0.9356064</code></pre>
+<p>I performed a logistic regression predicting sex from every variable and the AUC calculated is 0.9552, which falls within the range of “great”. The sensitivity is 0.9339, the specificity is 0.875, the precision is 0.8828, and the accuracy is 0.9045. After performing 10-fold CV, The accuracy decreased to 0.8962, the sensitivity to 0.8961, the specificity increased to 0.8793, the precision decreased to 0.8632, and the AUC decreased to 0.9211, which means in the prior model there was likely overfitting. After performing lasso the variables retained were species “SS”, age “I”, Tail and StandardTail. I performed a 10-fold CV using only the four variables that lasso deemed important and achieved an AUC of 0.9524, which is just below the glm I performed with every variable, and is greater than the AUC generated by my first 10-fold CV.</p>
+</div>
+
+            
+        <hr>         <div class="related-posts">
+                <h5>Related Posts</h5>
+                
+              </div> 
+            </div>
+          </div>
+
+   <hr>  <div class="disqus">
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+
+    (function() {
+      
+      
+      if (window.location.hostname == "localhost")
+        return;
+
+      var disqus_shortname = '';
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  <a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div> 
+        </div>
+      </div>
+    </div>
+
+    
+    <footer>
+  <div id="footer">
+    <div class="container">
+      <p class="text-muted">&copy; All rights reserved. Powered by <a href="https://gohugo.io/">Hugo</a> and
+      <a href="http://www.github.com/nurlansu/hugo-sustain/">sustain</a> with ♥</p>
+    </div>
+  </div>
+</footer>
+<div class="footer"></div>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script src="../../js/docs.min.js"></script>
+<script src="../../js/main.js"></script>
+
+<script src="../../js/ie10-viewport-bug-workaround.js"></script>
+
+
+    
+  </body>
+</html>
